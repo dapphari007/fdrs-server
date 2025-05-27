@@ -10,7 +10,7 @@ services:
       - HOST=0.0.0.0
       - NODE_ENV=production
       - DATABASE_URL=postgresql://pradeepkalyan:Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm@dpg-d0qqb93uibrs73erg1eg-a.oregon-postgres.render.com/leave_management_odpr?sslmode=require
-      - JWT_SECRET=your_jwt_secret_key
+      - JWT_SECRET=your_jwt_secret_key?sslmode=require
       - JWT_EXPIRATION=1d
     volumes:
       - ./logs:/app/logs
