@@ -3,20 +3,36 @@ import config from "./config";
 import path from "path";
 import logger from "../utils/logger";
 
-export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: config.database.host,
-  port: config.database.port,
-  username: config.database.username,
-  password: config.database.password,
-  database: config.database.database,
-  synchronize: false, // Disable auto-synchronization to prevent data loss
-  logging: false, // Disable SQL logging
-  entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
-  migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
-  subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
-  cache: false, // Disable metadata caching
-});
+export const AppDataSource = new DataSource(
+  config.database.url
+    ? {
+        type: "postgres",
+        url: config.database.url,
+        synchronize: false, // Disable auto-synchronization to prevent data loss
+        logging: false, // Disable SQL logging
+        entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
+        migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
+        subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
+        cache: false, // Disable metadata caching
+        ssl: {
+          rejectUnauthorized: false // Required for some cloud database providers
+        }
+      }
+    : {
+        type: "postgres",
+        host: config.database.host,
+        port: config.database.port,
+        username: config.database.username,
+        password: config.database.password,
+        database: config.database.database,
+        synchronize: false, // Disable auto-synchronization to prevent data loss
+        logging: false, // Disable SQL logging
+        entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
+        migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
+        subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
+        cache: false, // Disable metadata caching
+      }
+);
 
 export const initializeDatabase = async (): Promise<void> => {
   try {

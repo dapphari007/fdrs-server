@@ -9,11 +9,7 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       - NODE_ENV=production
-      - DB_HOST=dpg-d0qqb93uibrs73erg1eg-a.oregon-postgres.render.com
-      - DB_PORT=5432
-      - DB_USERNAME=pradeepkalyan
-      - DB_PASSWORD=Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm
-      - DB_DATABASE=leave_management_odpr
+      - DATABASE_URL=postgresql://pradeepkalyan:Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm@dpg-d0qqb93uibrs73erg1eg-a.oregon-postgres.render.com/leave_management_odpr?sslmode=require
       - JWT_SECRET=your_jwt_secret_key
       - JWT_EXPIRATION=1d
     volumes:

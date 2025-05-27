@@ -16,6 +16,7 @@ interface Config {
     username: string;
     password: string;
     database: string;
+    url?: string;
   };
   jwt: {
     secret: string;
@@ -42,6 +43,7 @@ const config: Config = {
     username: process.env.DB_USERNAME || 'pradeepkalyan',
     password: process.env.DB_PASSWORD || 'Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm',
     database: process.env.DB_DATABASE || 'leave_management_odpr',
+    url: process.env.DATABASE_URL || 'postgresql://pradeepkalyan:Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm@dpg-d0qqb93uibrs73erg1eg-a.oregon-postgres.render.com/leave_management_odpr',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_key',
