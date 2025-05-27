@@ -34,7 +34,7 @@ export const ensureDefaultUsers = async (): Promise<void> => {
     try {
       // Check if roleId column exists
       await AppDataSource.query(`
-        SELECT roleId FROM users LIMIT 1
+        SELECT "roleId" FROM "users" LIMIT 1
       `).catch(() => {
         throw new Error("roleId column does not exist");
       });
@@ -46,7 +46,7 @@ export const ensureDefaultUsers = async (): Promise<void> => {
     try {
       // Check if departmentId column exists
       await AppDataSource.query(`
-        SELECT departmentId FROM users LIMIT 1
+        SELECT "departmentId" FROM "users" LIMIT 1
       `).catch(() => {
         throw new Error("departmentId column does not exist");
       });
@@ -58,7 +58,7 @@ export const ensureDefaultUsers = async (): Promise<void> => {
     try {
       // Check if positionId column exists
       await AppDataSource.query(`
-        SELECT positionId FROM users LIMIT 1
+        SELECT "positionId" FROM "users" LIMIT 1
       `).catch(() => {
         throw new Error("positionId column does not exist");
       });

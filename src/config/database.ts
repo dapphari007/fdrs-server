@@ -3,36 +3,20 @@ import config from "./config";
 import path from "path";
 import logger from "../utils/logger";
 
-export const AppDataSource = new DataSource(
-  config.database.url
-    ? {
-        type: "postgres",
-        url: config.database.url,
-        synchronize: false, // Disable auto-synchronization to prevent data loss
-        logging: false, // Disable SQL logging
-        entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
-        migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
-        subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
-        cache: false, // Disable metadata caching
-        ssl: {
-          rejectUnauthorized: false // Required for some cloud database providers
-        }
-      }
-    : {
-        type: "postgres",
-        host: config.database.host,
-        port: config.database.port,
-        username: config.database.username,
-        password: config.database.password,
-        database: config.database.database,
-        synchronize: false, // Disable auto-synchronization to prevent data loss
-        logging: false, // Disable SQL logging
-        entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
-        migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
-        subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
-        cache: false, // Disable metadata caching
-      }
-);
+// Always use the external URL for database connection
+export const AppDataSource = new DataSource({
+  type: "postgres",
+  url: "postgresql://pradeepkalyan:Ie4QVOtO9IPfD3NYLk0nhZLpVBx3BYrm@dpg-d0qqb93uibrs73erg1eg-a.oregon-postgres.render.com/leave_management_odpr",
+  synchronize: false, // Disable auto-synchronization to prevent data loss
+  logging: false, // Disable SQL logging
+  entities: [path.join(__dirname, "../models/**/*.{ts,js}")],
+  migrations: [path.join(__dirname, "../migrations/**/*.{ts,js}")],
+  subscribers: [path.join(__dirname, "../subscribers/**/*.{ts,js}")],
+  cache: false, // Disable metadata caching
+  ssl: {
+    rejectUnauthorized: false // Required for some cloud database providers
+  }
+});
 
 export const initializeDatabase = async (): Promise<void> => {
   try {
