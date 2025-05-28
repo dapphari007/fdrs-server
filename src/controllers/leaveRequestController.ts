@@ -503,14 +503,20 @@ export const getManagerLeaveRequests = async (
       const allUsers = await userRepository.find();
       managedUserIds = allUsers.map((user) => user.id);
     }
-    // For managers, get only their team members
+    // For managers, get their team members and their own leave requests
     else if (userRole === UserRole.MANAGER) {
       // Get all users managed by this manager
       const managedUsers = await userRepository.find({
         where: { managerId: userId as string },
       });
 
-      if (managedUsers.length === 0) {
+      // Include the manager's own ID to see their own leave requests
+      managedUserIds = [...managedUsers.map((user) => user.id), userId as string];
+      
+      if (managedUserIds.length === 1 && managedUserIds[0] === userId) {
+        // If the manager has no team members, they should still see their own leave requests
+        // No need to return early
+      } else if (managedUserIds.length === 0) {
         return h
           .response({
             leaveRequests: [],
@@ -518,17 +524,21 @@ export const getManagerLeaveRequests = async (
           })
           .code(200);
       }
-
-      managedUserIds = managedUsers.map((user) => user.id);
     }
-    // For team leads, get only their team members
+    // For team leads, get their team members and their own leave requests
     else if (userRole === UserRole.TEAM_LEAD) {
       // Get all users where this user is the team lead
       const teamMembers = await userRepository.find({
         where: { teamLeadId: userId as string },
       });
 
-      if (teamMembers.length === 0) {
+      // Include the team lead's own ID to see their own leave requests
+      managedUserIds = [...teamMembers.map((user) => user.id), userId as string];
+      
+      if (managedUserIds.length === 1 && managedUserIds[0] === userId) {
+        // If the team lead has no team members, they should still see their own leave requests
+        // No need to return early
+      } else if (managedUserIds.length === 0) {
         return h
           .response({
             leaveRequests: [],
@@ -536,8 +546,6 @@ export const getManagerLeaveRequests = async (
           })
           .code(200);
       }
-
-      managedUserIds = teamMembers.map((user) => user.id);
     }
 
     // Build query
