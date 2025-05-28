@@ -33,8 +33,8 @@ interface Config {
 
 const config: Config = {
   server: {
-    port: parseInt(process.env.PORT || '3000', 10),
-    host: process.env.HOST || 'localhost',
+    port: parseInt(process.env.PORT || '10000', 10),
+    host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {

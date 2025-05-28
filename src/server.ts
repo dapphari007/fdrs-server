@@ -93,7 +93,7 @@ const init = async () => {
       host: config.server.host,
       routes: {
         cors: {
-          origin: ["http://localhost:5173"], // Allow the Vite dev server
+          origin: ["http://localhost:5173", "https://client-ptd2.onrender.com"], // Allow both local and production client
           credentials: true,
           additionalHeaders: ["Authorization", "Content-Type"],
           additionalExposedHeaders: ["Authorization"],
