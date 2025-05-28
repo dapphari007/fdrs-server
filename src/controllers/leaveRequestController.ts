@@ -214,6 +214,11 @@ export const createLeaveRequest = async (
     leaveRequest.numberOfDays = numberOfDays;
     leaveRequest.reason = reason;
     leaveRequest.status = LeaveRequestStatus.PENDING;
+    
+    // Add metadata with user role for approval workflow
+    leaveRequest.metadata = {
+      requestUserRole: user.role
+    };
 
     // Save leave request to database
     const savedLeaveRequest = await leaveRequestRepository.save(leaveRequest);
@@ -932,6 +937,11 @@ export const updateLeaveRequestStatus = async (
           const metadata = leaveRequest.metadata || {};
           metadata.currentApprovalLevel = currentApproverLevel;
           metadata.requiredApprovalLevels = sortedLevels.map((l) => l.level);
+          
+          // Preserve the requestUserRole if it exists
+          if (!metadata.requestUserRole && requestUser) {
+            metadata.requestUserRole = requestUser.role;
+          }
 
           // Add to approval history
           if (!metadata.approvalHistory) {
