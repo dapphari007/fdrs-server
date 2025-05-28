@@ -217,34 +217,39 @@ export const createLeaveRequest = async (
     
     // Add metadata with user role for approval workflow and set up approval levels
     const metadata: any = {
-      requestUserRole: user.role
+      requestUserRole: user.role,
+      isFullyApproved: false,
+      approvalHistory: []
     };
     
     // Set up approval workflow based on user role
     if (user.role === UserRole.MANAGER) {
-      // For Manager, set up approval workflow to go directly to HR
-      metadata.currentApprovalLevel = 1; // Start at level 1
-      metadata.requiredApprovalLevels = [1, 2]; // Level 1 (Manager's manager), Level 2 (HR)
-      metadata.isFullyApproved = false;
-      metadata.approvalHistory = [];
+      // For Manager, determine the next level in the workflow (skipping manager level)
+      // Start at level 0 and set HR as the next approver
+      metadata.currentApprovalLevel = 0;
+      
+      // Skip the manager level (level 1) and go directly to HR (level 2)
+      metadata.requiredApprovalLevels = [2]; 
     } else if (user.role === UserRole.HR) {
-      // For HR, set up approval workflow to go to HR Director or Super Admin
-      metadata.currentApprovalLevel = 1; // Start at level 1
-      metadata.requiredApprovalLevels = [1, 2]; // Level 1 (HR Director), Level 2 (Super Admin if needed)
-      metadata.isFullyApproved = false;
-      metadata.approvalHistory = [];
+      // For HR, determine the next level in the workflow (skipping HR level)
+      // Start at level 0 and set Super Admin as the next approver
+      metadata.currentApprovalLevel = 0;
+      
+      // Skip the HR level (level 2) and go directly to Super Admin (level 3)
+      metadata.requiredApprovalLevels = [3];
     } else if (user.role === UserRole.TEAM_LEAD) {
       // For Team Lead, set up approval workflow to go to Manager then HR
-      metadata.currentApprovalLevel = 1; // Start at level 1
-      metadata.requiredApprovalLevels = [1, 2, 3]; // Level 1 (Manager), Level 2 (HR), Level 3 (if needed)
-      metadata.isFullyApproved = false;
-      metadata.approvalHistory = [];
+      // Start at level 0
+      metadata.currentApprovalLevel = 0;
+      
+      // Skip the team lead level (level 1) and go to Manager (level 2) then HR (level 3)
+      metadata.requiredApprovalLevels = [2, 3];
     } else {
       // Default workflow for regular employees
-      metadata.currentApprovalLevel = 0; // Start at level 0
-      metadata.requiredApprovalLevels = [1, 2, 3]; // Level 1 (Team Lead), Level 2 (Manager), Level 3 (HR)
-      metadata.isFullyApproved = false;
-      metadata.approvalHistory = [];
+      metadata.currentApprovalLevel = 0;
+      
+      // Regular workflow: Team Lead (level 1), Manager (level 2), HR (level 3)
+      metadata.requiredApprovalLevels = [1, 2, 3];
     }
     
     leaveRequest.metadata = metadata;
@@ -274,63 +279,40 @@ export const createLeaveRequest = async (
         }
       }
     } 
-    // For Manager role, notify their manager and HR
+    // For Manager role, notify HR directly (skip manager level)
     else if (user.role === UserRole.MANAGER) {
-      // Notify manager's manager if assigned
-      if (user.managerId) {
-        const managersManager = await userRepository.findOne({
-          where: { id: user.managerId, isActive: true },
-        });
-        
-        if (managersManager) {
-          // Send email notification to manager's manager
-          await emailService.sendLeaveRequestNotification(
-            managersManager.email,
-            `${user.firstName} ${user.lastName} (Manager)`,
-            leaveType.name,
-            formatDate(start),
-            formatDate(end),
-            reason
-          );
-        }
-      }
-      
-      // Also notify HR for the next level approval
-      const hrUsers = await userRepository.find({
-        where: { role: UserRole.HR, isActive: true },
-      });
+      // Get HR approvers based on the workflow
+      const hrApprovers = await approverService.findApproversByRoles([UserRole.HR], user.department);
 
-      if (hrUsers.length > 0) {
+      if (hrApprovers.length > 0) {
         // Notify all HR users
-        for (const hrUser of hrUsers) {
+        for (const hrUser of hrApprovers) {
           await emailService.sendLeaveRequestNotification(
             hrUser.email,
             `${user.firstName} ${user.lastName} (Manager)`,
             leaveType.name,
             formatDate(start),
             formatDate(end),
-            reason + "\n\nNote: This leave request will require your approval after manager approval."
+            reason + "\n\nNote: This leave request requires your approval as the next level in the workflow."
           );
         }
       }
     }
-    // For HR role, notify HR Director or Super Admin
+    // For HR role, notify Super Admin directly (skip HR level)
     else if (user.role === UserRole.HR) {
-      // Find HR Director or Super Admin users to notify
-      const superAdmins = await userRepository.find({
-        where: { role: UserRole.SUPER_ADMIN, isActive: true },
-      });
+      // Get Super Admin approvers based on the workflow
+      const superAdminApprovers = await approverService.findApproversByRoles([UserRole.SUPER_ADMIN]);
 
-      if (superAdmins.length > 0) {
+      if (superAdminApprovers.length > 0) {
         // Notify all Super Admin users
-        for (const admin of superAdmins) {
+        for (const admin of superAdminApprovers) {
           await emailService.sendLeaveRequestNotification(
             admin.email,
             `${user.firstName} ${user.lastName} (HR)`,
             leaveType.name,
             formatDate(start),
             formatDate(end),
-            reason
+            reason + "\n\nNote: This HR leave request requires your approval as the next level in the workflow."
           );
         }
       }
