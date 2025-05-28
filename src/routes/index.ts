@@ -28,6 +28,22 @@ export const registerRoutes = (server: Server): void => {
       tags: ["api", "health"],
     },
   };
+  
+  // Add a root route handler
+  const rootRoute: ServerRoute = {
+    method: "GET",
+    path: "/",
+    handler: () => ({ 
+      status: "ok", 
+      message: "Leave Management API Server is running",
+      timestamp: new Date().toISOString() 
+    }),
+    options: {
+      auth: false,
+      description: "Root endpoint",
+      tags: ["api", "root"],
+    },
+  };
 
   server.route([
     ...authRoutes,
@@ -49,5 +65,7 @@ export const registerRoutes = (server: Server): void => {
     ...debugRoutes,
     // Health check route
     healthCheckRoute,
+    // Root route
+    rootRoute,
   ]);
 };
