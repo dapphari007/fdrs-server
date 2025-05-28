@@ -95,9 +95,10 @@ const init = async () => {
         cors: {
           origin: ["http://localhost:5173", "https://client-ptd2.onrender.com", "https://client-nyk3.onrender.com"], // Allow both local and production client
           credentials: true,
-          additionalHeaders: ["Authorization", "Content-Type"],
+          additionalHeaders: ["Authorization", "Content-Type", "Access-Control-Request-Headers", "Access-Control-Request-Method"],
           additionalExposedHeaders: ["Authorization"],
           maxAge: 86400, // 24 hours
+          preflightStatusCode: 200 // Status code for OPTIONS requests
         },
         validate: {
           failAction: async (request, h, err) => {

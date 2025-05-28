@@ -758,3 +758,35 @@ export const checkDatabaseFlushed = async (
       .code(500);
   }
 };
+
+export const checkLeaveTypeBalances = async (
+  request: Request,
+  h: ResponseToolkit
+) => {
+  try {
+    const { id } = request.params; // leaveTypeId
+    const { year } = request.query as any;
+    
+    // Default to current year if not provided
+    const targetYear = year ? parseInt(year) : getCurrentYear();
+    
+    // Check if leave balances exist for this leave type and year
+    const leaveBalanceRepository = AppDataSource.getRepository(LeaveBalance);
+    const count = await leaveBalanceRepository.count({
+      where: {
+        leaveTypeId: id,
+        year: targetYear
+      }
+    });
+    
+    return h.response({
+      exists: count > 0,
+      count: count
+    }).code(200);
+  } catch (error) {
+    logger.error(`Error in checkLeaveTypeBalances: ${error}`);
+    return h
+      .response({ message: "An error occurred while checking leave type balances" })
+      .code(500);
+  }
+};
