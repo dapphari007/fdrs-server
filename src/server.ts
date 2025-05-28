@@ -129,33 +129,25 @@ const init = async () => {
 
     // Run migrations if needed with improved error handling
     try {
-      // Use our improved migration runner
-      logger.info("Checking for pending migrations...");
-      const pendingMigrations = await AppDataSource.showMigrations();
+      logger.info("Starting migration process with automatic fixes...");
+      try {
+        // Import the runMigrations function which now includes migration table fixes
+        const { runMigrations } = require("./scripts/runMigrations");
+        
+        // Run migrations with improved error handling and automatic fixes
+        await runMigrations(false); // Don't close the connection
+        
+        logger.info("Migration process completed successfully");
 
-      if (pendingMigrations) {
-        logger.info("Running pending migrations...");
-        try {
-          // Import the runMigrations function
-          const { runMigrations } = require("./scripts/runMigrations");
-          
-          // Run migrations with improved error handling
-          await runMigrations(false); // Don't close the connection
-          
-          logger.info("Migrations completed successfully");
-
-          // Add a small delay to ensure database is in a consistent state
-          // before proceeding with other operations
-          logger.info("Waiting for database to stabilize...");
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        } catch (migrationError) {
-          logger.error("Error running migrations:", migrationError);
-        }
-      } else {
-        logger.info("No pending migrations found");
+        // Add a small delay to ensure database is in a consistent state
+        // before proceeding with other operations
+        logger.info("Waiting for database to stabilize...");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (migrationError) {
+        logger.error("Error in migration process:", migrationError);
       }
     } catch (error) {
-      logger.error("Error in migration process:", error);
+      logger.error("Error starting migration process:", error);
     }
 
     // Check if tables exist before initializing data

@@ -12,6 +12,58 @@ export const runMigrations = async (closeConnection = true): Promise<void> => {
       logger.info("Database connected successfully");
     }
 
+    // First, try to fix the migrations table if needed
+    logger.info("Checking migrations table for issues...");
+    const queryRunner = AppDataSource.createQueryRunner();
+    
+    try {
+      // Check if migrations table exists
+      const tableExists = await queryRunner.hasTable("migrations");
+      
+      if (tableExists) {
+        // Check for null values in the name column
+        const nullNames = await queryRunner.query(
+          `SELECT id FROM migrations WHERE name IS NULL`
+        );
+
+        if (nullNames.length > 0) {
+          logger.info(`Found ${nullNames.length} migrations with null names, removing them`);
+          await queryRunner.query(`DELETE FROM migrations WHERE name IS NULL`);
+        }
+
+        // Check for duplicate migrations
+        const duplicates = await queryRunner.query(`
+          SELECT name, COUNT(*) 
+          FROM migrations 
+          GROUP BY name 
+          HAVING COUNT(*) > 1
+        `);
+
+        if (duplicates.length > 0) {
+          logger.info(`Found ${duplicates.length} duplicate migrations, keeping only the latest`);
+          
+          for (const dup of duplicates) {
+            const name = dup.name;
+            
+            await queryRunner.query(`
+              DELETE FROM migrations 
+              WHERE name = $1 
+              AND id NOT IN (
+                SELECT id FROM migrations 
+                WHERE name = $1 
+                ORDER BY timestamp DESC 
+                LIMIT 1
+              )
+            `, [name]);
+          }
+        }
+      }
+    } catch (fixError) {
+      logger.error("Error fixing migrations table:", fixError);
+    } finally {
+      await queryRunner.release();
+    }
+
     // Check for pending migrations
     const pendingMigrations = await AppDataSource.showMigrations();
     
