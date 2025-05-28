@@ -93,7 +93,7 @@ const init = async () => {
       host: config.server.host,
       routes: {
         cors: {
-          origin: ["http://localhost:5173", "https://client-ptd2.onrender.com", "https://client-nyk3.onrender.com"], // Allow both local and production client
+          origin: ["http://localhost:5173", "https://client-ptd2.onrender.com", "https://client-nyk3.onrender.com", "https://client-nyk3.onrender.com/"], // Include both with and without trailing slash
           credentials: true,
           additionalHeaders: ["Authorization", "Content-Type", "Access-Control-Request-Headers", "Access-Control-Request-Method"],
           additionalExposedHeaders: ["Authorization"],

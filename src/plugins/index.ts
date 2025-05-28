@@ -15,7 +15,28 @@ const corsPlugin = {
       path: '/{p*}',
       handler: (request, h) => {
         logger.info(`Handling OPTIONS request for: ${request.path}`);
-        return h.response().code(200);
+        
+        // Set CORS headers for preflight requests
+        const response = h.response().code(200);
+        
+        // Get the origin from the request
+        const origin = request.headers.origin;
+        const allowedOrigins = ["http://localhost:5173", "https://client-ptd2.onrender.com", "https://client-nyk3.onrender.com", "https://client-nyk3.onrender.com/"];
+        
+        // Set the appropriate Access-Control-Allow-Origin header
+        if (origin && allowedOrigins.includes(origin)) {
+          response.header('Access-Control-Allow-Origin', origin);
+        } else {
+          // Default to the client domain if origin is not in the allowed list
+          response.header('Access-Control-Allow-Origin', 'https://client-nyk3.onrender.com');
+        }
+        
+        response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        response.header('Access-Control-Allow-Headers', 'Authorization, Content-Type, Access-Control-Request-Headers, Access-Control-Request-Method');
+        response.header('Access-Control-Allow-Credentials', 'true');
+        response.header('Access-Control-Max-Age', '86400');
+        
+        return response;
       },
       options: {
         auth: false, // No authentication for OPTIONS requests
