@@ -23,6 +23,7 @@
     "init:approval-workflows": "ts-node src/scripts/initApprovalWorkflowsScript.ts",
     "db:reset": "ts-node src/scripts/resetDatabase.ts",
     "db:fresh": "npm run db:reset && npm run dev",
+    "check:leave-type": "ts-node src/scripts/checkLeaveType.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma:test": "ts-node src/scripts/test-prisma.ts",
     "prisma:generate": "prisma generate",
